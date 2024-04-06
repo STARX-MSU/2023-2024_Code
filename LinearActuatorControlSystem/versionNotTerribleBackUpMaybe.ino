@@ -10,7 +10,8 @@
 #define ANV 5 //analog voltage speed control pin (RED)
 #define IN1 2 //direction of actuation (BLUE)
 #define IN2 3 //direction of actuation (GRAY)
-//GROUND COLORS (BLACK, PINK/YELLOW, TAN)
+//GROUND COLORS (BLACK, PINK/YELLOW OR WHITE?, TAN)
+//Sensor Wiring: Yellow -> SCL, Blue -> SDA, Black -> GROUND, Red -> 5V(power)
 
 #define SERIAL_PORT_SPEED 9600 
 #define TO_STANDING 53
