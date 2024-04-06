@@ -31,7 +31,7 @@ float AVERAGED = 0;
 //recalibrate gyros periodically, probably once a month or before testing
 
 Adafruit_LSM6DSOX suit_sensor; //gyro sensor
-Adafruit_LSM6DSOX pilot_sensor;
+Adafruit_LSM6DSOX pilot_sensor; 
 //double corrected_X[2], corrected_Y[2], corrected_Z[2]; //variables that store the angular speed after the offset has been applied
 
 float AcX, AcY, AcZ, AcX1, AcY1, AcZ1, pilot_angle, suit_angle, angle_difference, actuatorSpeed;
