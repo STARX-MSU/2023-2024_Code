@@ -13,9 +13,9 @@
 //GROUND COLORS (BLACK, PINK/YELLOW OR WHITE?, TAN)
 //Sensor Wiring: Yellow -> SCL, Blue -> SDA, Black -> GROUND, Red -> 5V(power)
 
-#define SERIAL_PORT_SPEED 9600 
+#define SERIAL_PORT_SPEED 9600
 #define TO_STANDING 53
-#define MAX_SPEED_ANGLE 15 //The maximum angle difference value. Used to determine the slope the system calculates actuator speed with.
+#define MAX_SPEED_ANGLE 5 //The maximum angle difference value. Used to determine the slope the system calculates actuator speed with.
 #define MAX_MOTOR_SPEED_KNEE 100 //The maximum actuator speed allowed. Used to determine the slope the system claculates actuator speed with.
 #define MAX_MOTOR_SPEED_HIP 120
 
@@ -35,8 +35,10 @@ Adafruit_LSM6DSOX pilot_sensor;
 //double corrected_X[2], corrected_Y[2], corrected_Z[2]; //variables that store the angular speed after the offset has been applied
 
 float AcX, AcY, AcZ, AcX1, AcY1, AcZ1, pilot_angle, suit_angle, angle_difference, actuatorSpeed;
-float ANGLE_DEAD_ZONE; //Threshold of angle difference that will not send signal to the actuator to move. Absolute value is used so the value is +- 0 difference.
-String option = "HIP"; //Change based on HIP or KNEE
+
+float KNEE_DEAD_ZONE = 4; //Threshold of angle difference that will not send signal to the actuator to move. Absolute value is used so the value is +- 0 difference.
+float HIP_DEAD_ZONE = 1.5;
+String option = "KNEE"; //Change based on HIP or KNEE
 
 void setup() 
 {
@@ -51,8 +53,10 @@ void setup()
   pinMode(LED_BUILTIN,OUTPUT);
 
   //Checks for gyroscope
+  Serial.println("I2C 0x6A Starting");
   if (!suit_sensor.begin_I2C(0x6A))//0x6A or 0x6B, (&Wire or &Wire1 is used for SDA/SCL and SDA1/SCL1)
   {
+    Serial.println("I2C 0x6A Not Connected");
     digitalWrite(LED_BUILTIN,HIGH); //built in led high means the arduino failed to recognize the gyro
     while (1) 
     {
@@ -65,9 +69,10 @@ void setup()
   suit_sensor.setAccelRange(LSM6DS_ACCEL_RANGE_8_G);
   suit_sensor.setGyroRange(LSM6DS_GYRO_RANGE_1000_DPS);
 
-  
+  Serial.println("I2C 0x6B Starting");
   if (!pilot_sensor.begin_I2C(0x6B))//0x6A or 0x6B, &Wire or &Wire1
   {
+    Serial.println("I2C 0x6B Not Connected");
     digitalWrite(LED_BUILTIN,HIGH); //built in led high means the arduino failed to recognize the gyro
     while (1) 
     {
@@ -129,14 +134,13 @@ void loop()
     angle_difference = SUM / WINDOW_SIZE;      // Divide the sum of the window by the window size for the result
     //if the pilots leg is above the suit leg
     if (angle_difference < 0){
-      ANGLE_DEAD_ZONE = 1.5;
       //extend
       digitalWrite(IN1, HIGH);
       digitalWrite(IN2, LOW);
 
       //Check how large the angle difference is to determine actuator speed
       //Check if the angle difference is in the dead zone
-      if (abs(angle_difference) < ANGLE_DEAD_ZONE){
+      if (abs(angle_difference) < HIP_DEAD_ZONE){
         //do nothing
         digitalWrite(IN1, LOW);
         digitalWrite(IN2, LOW);
@@ -156,10 +160,9 @@ void loop()
     }
     else if (angle_difference > 0){
       //retract
-      ANGLE_DEAD_ZONE = 1.5;
       digitalWrite(IN1, LOW);
       digitalWrite(IN2, HIGH);
-      if (abs(angle_difference) < ANGLE_DEAD_ZONE){
+      if (abs(angle_difference) < HIP_DEAD_ZONE){
         digitalWrite(IN1, LOW);
         digitalWrite(IN2, LOW);
       }
@@ -188,7 +191,6 @@ void loop()
   
     angle_difference = SUM / WINDOW_SIZE;      // Divide the sum of the window by the window size for the result
     //if the pilots leg is above the suit leg
-    ANGLE_DEAD_ZONE = 4;
     if (angle_difference < 0){
       //retract
       digitalWrite(IN1, LOW);
@@ -196,7 +198,7 @@ void loop()
 
       //Check how large the angle difference is to determine actuator speed
       //Check if the angle difference is in the dead zone
-      if (abs(angle_difference) < ANGLE_DEAD_ZONE){
+      if (abs(angle_difference) < KNEE_DEAD_ZONE){
         //do nothing
         digitalWrite(IN1, LOW);
         digitalWrite(IN2, LOW);
@@ -218,7 +220,7 @@ void loop()
       //extend
       digitalWrite(IN1, HIGH);
       digitalWrite(IN2, LOW);
-      if (abs(angle_difference) < ANGLE_DEAD_ZONE){
+      if (abs(angle_difference) < KNEE_DEAD_ZONE){
         digitalWrite(IN1, LOW);
         digitalWrite(IN2, LOW);
       }
@@ -238,6 +240,6 @@ void loop()
     }
   }
   
-  Serial.print("   Suit Angle:");Serial.print(suit_angle);Serial.print("   Pilot Angle:");Serial.print(pilot_angle);Serial.print("   Angle Difference:");Serial.println(angle_difference);
+  Serial.print("   Actuator Speed:");Serial.print(actuatorSpeed);Serial.print("   Angle Difference:");Serial.println(angle_difference);
 
 }
