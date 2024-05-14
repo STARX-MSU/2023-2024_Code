@@ -15,9 +15,12 @@
 
 #define SERIAL_PORT_SPEED 9600
 #define TO_STANDING 53
-#define MAX_SPEED_ANGLE 5 //The maximum angle difference value. Used to determine the slope the system calculates actuator speed with.
-#define MAX_MOTOR_SPEED_KNEE 100 //The maximum actuator speed allowed. Used to determine the slope the system claculates actuator speed with.
-#define MAX_MOTOR_SPEED_HIP 120
+
+#define MAX_SPEED_ANGLE_KNEE 10 //The maximum angle difference value. Used to determine the slope the system calculates actuator speed with.
+#define MAX_SPEED_ANGLE_HIP 7
+
+#define MAX_MOTOR_SPEED_KNEE 120 //The maximum actuator speed allowed. Used to determine the slope the system claculates actuator speed with.
+#define MAX_MOTOR_SPEED_HIP 180
 
 #define WINDOW_SIZE 5
 
@@ -36,7 +39,7 @@ Adafruit_LSM6DSOX pilot_sensor;
 
 float AcX, AcY, AcZ, AcX1, AcY1, AcZ1, pilot_angle, suit_angle, angle_difference, actuatorSpeed;
 
-float KNEE_DEAD_ZONE = 4; //Threshold of angle difference that will not send signal to the actuator to move. Absolute value is used so the value is +- 0 difference.
+float KNEE_DEAD_ZONE = 2; //Threshold of angle difference that will not send signal to the actuator to move. Absolute value is used so the value is +- 0 difference.
 float HIP_DEAD_ZONE = 1.5;
 String option = "KNEE"; //Change based on HIP or KNEE
 
@@ -147,8 +150,9 @@ void loop()
       }
       
       //determine speed 
-      else if (abs(angle_difference) < MAX_SPEED_ANGLE){
-        actuatorSpeed = (MAX_MOTOR_SPEED_HIP/MAX_SPEED_ANGLE)*abs(angle_difference);
+      else if (abs(angle_difference) < MAX_SPEED_ANGLE_HIP){
+        //actuatorSpeed = (MAX_MOTOR_SPEED_HIP/MAX_SPEED_ANGLE_HIP)*abs(angle_difference);
+        actuatorSpeed = pow(pow(MAX_MOTOR_SPEED_HIP, 1/MAX_SPEED_ANGLE_HIP), angle_difference);
         analogWrite(ANV, actuatorSpeed);
       }
 
@@ -166,8 +170,9 @@ void loop()
         digitalWrite(IN1, LOW);
         digitalWrite(IN2, LOW);
       }
-      if (abs(angle_difference) < MAX_SPEED_ANGLE){
-        actuatorSpeed = (MAX_MOTOR_SPEED_HIP/MAX_SPEED_ANGLE)*abs(angle_difference);
+      if (abs(angle_difference) < MAX_SPEED_ANGLE_HIP){
+        //actuatorSpeed = (MAX_MOTOR_SPEED_HIP/MAX_SPEED_ANGLE_HIP)*abs(angle_difference);
+        actuatorSpeed = pow(pow(MAX_MOTOR_SPEED_HIP, 1/MAX_SPEED_ANGLE_HIP), angle_difference);
         analogWrite(ANV, actuatorSpeed);
       }
       else {
@@ -205,8 +210,9 @@ void loop()
       }
       
       //determine speed 
-      else if (abs(angle_difference) < MAX_SPEED_ANGLE){
-        actuatorSpeed = (MAX_MOTOR_SPEED_KNEE/MAX_SPEED_ANGLE)*abs(angle_difference);
+      else if (abs(angle_difference) < MAX_SPEED_ANGLE_KNEE){
+        //actuatorSpeed = (MAX_MOTOR_SPEED_KNEE/MAX_SPEED_ANGLE_KNEE)*abs(angle_difference);
+        actuatorSpeed = pow(pow(MAX_MOTOR_SPEED_KNEE, 1/MAX_SPEED_ANGLE_KNEE), angle_difference);
         analogWrite(ANV, actuatorSpeed);
       }
 
@@ -224,8 +230,9 @@ void loop()
         digitalWrite(IN1, LOW);
         digitalWrite(IN2, LOW);
       }
-      if (abs(angle_difference) < MAX_SPEED_ANGLE){
-        actuatorSpeed = (MAX_MOTOR_SPEED_KNEE/MAX_SPEED_ANGLE)*abs(angle_difference);
+      if (abs(angle_difference) < MAX_SPEED_ANGLE_KNEE){
+        //actuatorSpeed = (MAX_MOTOR_SPEED_KNEE/MAX_SPEED_ANGLE_KNEE)*abs(angle_difference);
+        actuatorSpeed = pow(pow(MAX_MOTOR_SPEED_KNEE, 1/MAX_SPEED_ANGLE_KNEE), angle_difference);
         analogWrite(ANV, actuatorSpeed);
       }
       else {
